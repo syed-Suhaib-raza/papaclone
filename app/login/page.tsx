@@ -158,15 +158,13 @@ export default function LoginPage() {
             </div>
 
             {/* Social */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <button type="button"
-                className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:scale-[1.02] bg-muted border border-border text-foreground">
-                <span className="font-black text-sm">G</span> Google
-              </button>
-              <button type="button"
-                className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:scale-[1.02] bg-[#1877f2] text-white">
-                <span className="font-black text-sm">f</span> Facebook
-              </button>
+            <div className="grid grid-cols-1 gap-2.5">
+              <button className="shimmer-btn glow-btn-150 flex items-center justify-center border rounded-lg shadow-sm px-4 py-2 text-sm font-medium text-white-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+  <img src="https://docs.material-tailwind.com/icons/google.svg" alt="Google logo" className="h-5 w-5 mr-3" />
+  Continue with Google
+</button>
+
+              
             </div>
 
           </form>

@@ -757,7 +757,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-center text-muted-foreground text-xs mt-6 font-medium">
-                © {new Date().getFullYear()} SmartFood Inc. All rights reserved. Made with ❤️ by Rizwan, Aqib and Suhaib.
+                © {new Date().getFullYear()} SmartFood Inc. All rights reserved. Made with ❤️ by Rizwan, Aaqib and Suhaib.
               </p>
                 </CardContent>
               </Card>
