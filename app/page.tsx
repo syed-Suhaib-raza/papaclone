@@ -347,7 +347,11 @@ export default function LandingPage() {
                           padding: "16px",
                           boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
                         }}>
+<<<<<<< HEAD
                         <Image src="/panda.svg" alt="SmartFood delivery" width={380} height={380} priority className="rounded-2xl" style={{ display: "block" }} />
+=======
+                        <Image src="/panda.png" alt="SmartFood delivery" width={380} height={380} priority className="rounded-2xl" style={{ display: "block" }} />
+>>>>>>> 247229c7ccdd003915a39bb6133ed94d6b3885a7
                         <div className="mt-3 flex items-center justify-between px-1">
                           <div>
                             <p className="text-xs font-black text-foreground">SmartFood Rider</p>
