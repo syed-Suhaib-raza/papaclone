@@ -1,5 +1,5 @@
 "use client"
-
+import { supabase } from "@/lib/supaBaseClient"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
@@ -32,6 +32,18 @@ export default function LoginPage() {
     setLoading(true)
     setTimeout(() => setLoading(false), 1800)
   }
+  const loginWithGoogle = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`
+    }
+  })
+
+  if (error) {
+    console.error("Google login error:", error.message)
+  }
+}
 
   return (
     <div className="h-screen w-screen flex items-center justify-center relative overflow-hidden theme-transition
@@ -159,12 +171,13 @@ export default function LoginPage() {
 
             {/* Social */}
             <div className="grid grid-cols-1 gap-2.5">
-              <button className="shimmer-btn glow-btn flex items-center justify-center border rounded-lg shadow-sm px-4 py-2 text-sm font-medium text-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-  <img src="https://docs.material-tailwind.com/icons/google.svg" alt="Google logo" className="h-5 w-5 mr-3" />
-  Continue with Google
-</button>
-
-              
+              <button
+                type="button"
+                onClick={loginWithGoogle}
+                className="shimmer-btn glow-btn flex items-center justify-center border rounded-lg shadow-sm px-4 py-2 text-sm font-medium text-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <img src="https://docs.material-tailwind.com/icons/google.svg" alt="Google logo" className="h-5 w-5 mr-3" />
+                  Continue with Google
+              </button>
             </div>
 
           </form>
