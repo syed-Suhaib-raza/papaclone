@@ -56,7 +56,7 @@ export default function LoginPage() {
       {/* Back button */}
       <Link href="/" className="absolute top-5 left-5 z-20">
         <button className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full transition-all backdrop-blur-sm hover:scale-105
-          text-black/50 dark:text-white/60 border border-black/10 dark:border-white/10 bg-black/[0.04] dark:bg-white/[0.05]">
+          text-black/50 dark:text-white/60 border border-black/10 dark:border-white/10 bg-black/4 dark:bg-white/5">
           <ArrowLeft size={12} /> Home
         </button>
       </Link>
@@ -65,8 +65,8 @@ export default function LoginPage() {
       <button
         onClick={() => setDark(d => !d)}
         className="mode-btn absolute top-5 right-5 z-20
-          bg-black/[0.06] dark:bg-white/[0.07]
-          border-black/[0.12] dark:border-white/[0.12]
+          bg-black/6 dark:bg-white/[0.07]
+          border-black/12 dark:border-white/12
           text-gray-500 dark:text-yellow-300"
       >
         {dark ? <Moon size={15} /> : <Sun size={15} />}
@@ -103,10 +103,10 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
             {/* Email */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</label>
               <div className="relative">
                 <Mail size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -121,7 +121,7 @@ export default function LoginPage() {
             </div>
 
             {/* Password */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Password</label>
                 <a href="#" className="text-[10px] font-bold hover:underline text-chart-1">Forgot?</a>
@@ -159,7 +159,7 @@ export default function LoginPage() {
 
             {/* Social */}
             <div className="grid grid-cols-1 gap-2.5">
-              <button className="shimmer-btn glow-btn-150 flex items-center justify-center border rounded-lg shadow-sm px-4 py-2 text-sm font-medium text-white-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <button className="shimmer-btn glow-btn flex items-center justify-center border rounded-lg shadow-sm px-4 py-2 text-sm font-medium text-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
   <img src="https://docs.material-tailwind.com/icons/google.svg" alt="Google logo" className="h-5 w-5 mr-3" />
   Continue with Google
 </button>
