@@ -36,7 +36,7 @@ export default function LoginPage() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`
+      redirectTo: `${location.origin}/auth/callback`
     }
   })
 
@@ -175,7 +175,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={loginWithGoogle}
                 className="shimmer-btn glow-btn flex items-center justify-center border rounded-lg shadow-sm px-4 py-2 text-sm font-medium text-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                  <img src="https://docs.material-tailwind.com/icons/google.svg" alt="Google logo" className="h-5 w-5 mr-3" />
+                  <img src="/google.svg" alt="Google logo" className="h-5 w-5 mr-3" />
                   Continue with Google
               </button>
             </div>
