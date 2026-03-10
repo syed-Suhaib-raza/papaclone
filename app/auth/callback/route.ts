@@ -47,7 +47,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/login`)
   }
 
-  console.log("User ID:", user.id)
 
   /* Get role from database */
   const { data: profile, error: roleError } = await supabase
@@ -62,8 +61,6 @@ export async function GET(req: NextRequest) {
   }
 
   const role = profile.role
-
-  console.log("Role:", role)
 
   /* Redirect to role dashboard */
   return NextResponse.redirect(`${origin}/${role}`)

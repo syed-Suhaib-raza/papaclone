@@ -7,8 +7,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Moon, Sun, Search, MapPin, ChevronRight, Flame, Clock, Star, Bike, Users, Award, Zap } from "lucide-react"
+import { Search, MapPin, ChevronRight, Flame, Clock, Star, Bike, Users, Award, Zap, ShoppingCart } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+
+import ThemeToggle from "@/components/theme-toggle"
 
 function useCounter(target: number, duration = 2000, go = false) {
   const [count, setCount] = useState(0)
@@ -26,35 +28,70 @@ function useCounter(target: number, duration = 2000, go = false) {
   return count
 }
 
-function Stat({ target, label, go, dark }: { target: number; label: string; go: boolean; dark: boolean }) {
+function Stat({ target, label, go }: { target: number; label: string; go: boolean }) {
   const n = useCounter(target, 2200, go)
   const d = target >= 1000 ? `${Math.floor(n / 1000)}K` : `${n}`
+
   return (
     <div className="text-center">
-      <p className={`text-4xl font-black tracking-tighter leading-none ${dark ? "text-white" : "text-foreground"}`}>
-        {d}<span className="text-primary">+</span>
+      <p className="text-4xl font-black tracking-tighter leading-none text-foreground">
+        {d}
+        <span className="text-primary">+</span>
       </p>
-      <p className="text-muted-foreground text-[11px] uppercase tracking-[0.15em] mt-1.5">{label}</p>
+
+      <p className="text-muted-foreground text-[11px] uppercase tracking-[0.15em] mt-1.5">
+        {label}
+      </p>
     </div>
   )
 }
 
-function FloatCard({ emoji, title, sub, cls, dark }: { emoji: string; title: string; sub: string; cls: string; dark: boolean }) {
+function FloatCard({
+  emoji,
+  title,
+  sub,
+  cls,
+}: {
+  emoji: string
+  title: string
+  sub: string
+  cls: string
+}) {
   return (
-    <div className={`absolute z-20 backdrop-blur-md rounded-2xl shadow-2xl px-3 py-3 flex items-center gap-3 border ${cls} ${dark ? "bg-card/90 border-border" : "bg-white/90 border-white"}`}>
+    <div
+      className={`absolute z-20 backdrop-blur-md rounded-2xl shadow-2xl px-3 py-3 flex items-center gap-3 border bg-card/90 border-border ${cls}`}
+    >
       <span className="text-2xl">{emoji}</span>
+
       <div>
-        <p className={`text-[11px] font-black leading-none ${dark ? "text-card-foreground" : "text-gray-900"}`}>{title}</p>
-        <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>
+        <p className="text-[11px] font-black leading-none text-card-foreground">
+          {title}
+        </p>
+
+        <p className="text-[10px] text-muted-foreground mt-0.5">
+          {sub}
+        </p>
       </div>
     </div>
   )
 }
 
-function Logo({ dark, size = "text-xl" }: { dark: boolean; size?: string }) {
+function Logo({ size = "text-xl" }: { size?: string }) {
   return (
     <span className={`font-black tracking-tight ${size}`}>
-      🍕 <span className={dark ? "text-card-foreground" : "text-foreground"}>Smart</span><span style={{ background: "linear-gradient(135deg, oklch(0.586 0.253 17.585), oklch(0.645 0.246 16.439), oklch(0.81 0.117 11.638))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Food</span>
+      🍕 <span className="text-foreground">Smart</span>
+
+      <span
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.586 0.253 17.585), oklch(0.645 0.246 16.439), oklch(0.81 0.117 11.638))",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+      >
+        Food
+      </span>
     </span>
   )
 }
@@ -126,7 +163,6 @@ export default function LandingPage() {
   const [heroVis, setHeroVis]       = useState(false)
   const [scrolled, setScrolled]     = useState(false)
   const [activeNav, setActiveNav]   = useState("Home")
-  const [dark, setDark]             = useState(false)
   const [search, setSearch]         = useState("")
   const [searchOpen, setSearchOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState("Burgers")
@@ -155,10 +191,6 @@ export default function LandingPage() {
     return () => clearInterval(t)
   }, [])
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark)
-  }, [dark])
-
   const scrollToSection = (item: string) => {
     setActiveNav(item)
     const idMap: Record<string, string> = {
@@ -177,8 +209,8 @@ export default function LandingPage() {
   }
 
   const navBg = scrolled
-    ? (dark ? "bg-background/90 backdrop-blur-xl shadow-lg" : "bg-background/90 backdrop-blur-xl shadow-lg shadow-black/5")
-    : "bg-transparent"
+  ? "bg-background/90 backdrop-blur-xl shadow-lg"
+  : "bg-transparent"
 
   const filteredFoods = ALL_FOODS
     .filter(f => f.category === activeCategory)
@@ -191,7 +223,7 @@ export default function LandingPage() {
           {/* ══ NAVBAR ══ */}
           <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${navBg} py-4`}>
             <div className="max-w-7xl mx-auto px-8 flex items-center justify-between gap-4">
-              <a href="#"><Logo dark={dark} size="text-xl" /></a>
+              <a href="#"><Logo size="text-xl" /></a>
 
               <div className="relative hidden lg:flex flex-1 max-w-xs">
                 <div className="flex items-center gap-2 w-full rounded-full px-4 py-2 text-sm border bg-muted border-border text-muted-foreground focus-within:ring-2 focus-within:ring-ring transition-all">
@@ -229,26 +261,28 @@ export default function LandingPage() {
                 ))}
               </nav>
 
-              <div className="flex items-center gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button onClick={() => setDark(d => !d)}
-                      className={`mode-btn bg-card border-border ${dark ? "text-yellow-300" : "text-muted-foreground"}`}>
-                      {dark ? <Moon size={16} /> : <Sun size={16} />}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>{dark ? "Light Mode" : "Dark Mode"}</TooltipContent>
-                </Tooltip>
+              <div className="flex items-center gap-6">
 
-                <a href="./login" className="hidden lg:flex items-center gap-1.5 text-sm font-semibold transition-colors text-muted-foreground hover:text-foreground">
-                  <span>🛒</span>
-                  <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0 rounded-full border-0">0</Badge>
-                </a>
+  <ThemeToggle />
 
-                <a href="./login">
-                  <Button className="shimmer-btn glow-btn rounded-full px-5 py-2 text-sm font-bold text-primary-foreground border-0">Sign In</Button>
-                </a>
-              </div>
+  <a
+    href="./login"
+    className="hidden lg:flex items-center gap-1.5 text-sm font-semibold transition-colors text-muted-foreground hover:text-foreground"
+  >
+    <ShoppingCart size={20} />
+
+    <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0 rounded-full border-0">
+      0
+    </Badge>
+  </a>
+
+  <a href="./login">
+    <Button className="shimmer-btn glow-btn rounded-full px-5 py-2 text-sm font-bold text-primary-foreground border-0">
+      Sign In
+    </Button>
+  </a>
+
+</div>
             </div>
           </header>
 
@@ -326,7 +360,7 @@ export default function LandingPage() {
                         {[{target:4000,label:"Customers"},{target:70000,label:"Delivered"},{target:13000,label:"Reviews"}].map(({target,label},i) => (
                           <div key={label} className="flex items-center">
                             {i > 0 && <Separator orientation="vertical" className="h-10 mx-8 bg-border" />}
-                            <Stat target={target} label={label} go={statsGo} dark={dark} />
+                            <Stat target={target} label={label} go={statsGo} />
                           </div>
                         ))}
                       </div>
@@ -334,28 +368,43 @@ export default function LandingPage() {
 
                     {/* RIGHT */}
                     <div className="img relative flex items-center justify-center py-6 min-h-[420px] overflow-hidden">
-                      <div className="absolute w-80 h-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-primary/60 via-primary/20 to-transparent" />
-                      <div className="absolute w-[390px] h-[390px] rounded-full border-[1.5px] border-dashed border-primary/30 spin-cw" />
-                      <div className="absolute w-[290px] h-[290px] rounded-full border-[1.5px] border-dotted border-chart-2/30 spin-ccw" />
-                      <FloatCard emoji="⚡" title="22 Min Delivery" sub="Fastest in town"     cls="float-b top-8 left-4 lg:left-6"      dark={dark} />
-                      <FloatCard emoji="⭐" title="4.9 / 5 Rating"  sub="13K+ happy reviews" cls="float-c top-1/3 right-8 lg:right-4"  dark={dark} />
-                      <FloatCard emoji="🎁" title="20% Off Today"   sub="Code: FOOD20"        cls="float-b bottom-6 left-2 lg:-left-0"   dark={dark} />
+                      <div className="absolute w-80 h-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-primary/60 via-primary/20 to-transparent"/>
+                      <div className="absolute w-[390px] h-[390px] rounded-full border-[1.5px] border-dashed border-primary/30 spin-cw"/>
+                      <div className="absolute w-[290px] h-[290px] rounded-full border-[1.5px] border-dotted border-chart-2/30 spin-ccw"/>
+                      <FloatCard emoji="⚡" title="22 Min Delivery" sub="Fastest in town"     cls="float-b top-8 left-4 lg:left-6"/>
+                      <FloatCard emoji="⭐" title="4.9 / 5 Rating"  sub="13K+ happy reviews" cls="float-c top-1/3 right-8 lg:right-4"/>
+                      <FloatCard emoji="🎁" title="20% Off Today"   sub="Code: FOOD20"        cls="float-b bottom-6 left-2 lg:-left-0"/>
 
-                      <div className="relative z-10 float-a panda-wrap ml-8"
-                        style={{
-                          background: dark ? "linear-gradient(135deg,oklch(0.21 0.006 285.885),oklch(0.141 0.005 285.823))" : "linear-gradient(135deg,#fff7ed,#fef2f2)",
-                          padding: "16px",
-                          boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
-                        }}>
-                        <Image src="/panda.svg" alt="SmartFood delivery" width={380} height={380} priority className="rounded-2xl" style={{ display: "block" }} />
-                        <div className="mt-3 flex items-center justify-between px-1">
-                          <div>
-                            <p className="text-xs font-black text-foreground">SmartFood Rider</p>
-                            <p className="text-[10px] text-muted-foreground">⚡ Express Delivery</p>
-                          </div>
-                          <Badge className="bg-primary text-primary-foreground border-0 text-[10px] rounded-full px-2">🔴 Live</Badge>
-                        </div>
-                      </div>
+                      <div
+  className="relative z-10 float-a panda-wrap ml-8 p-4 rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.18)]
+  bg-[linear-gradient(135deg,#fff7ed,#fef2f2)]
+  dark:bg-[linear-gradient(135deg,oklch(0.21_0.006_285.885),oklch(0.141_0.005_285.823))]"
+>
+  <Image
+    src="/panda.svg"
+    alt="SmartFood delivery"
+    width={380}
+    height={380}
+    priority
+    className="rounded-2xl"
+  />
+
+  <div className="mt-3 flex items-center justify-between px-1">
+    <div>
+      <p className="text-xs font-black text-foreground">
+        SmartFood Rider
+      </p>
+
+      <p className="text-[10px] text-muted-foreground">
+        ⚡ Express Delivery
+      </p>
+    </div>
+
+    <Badge className="bg-primary text-primary-foreground border-0 text-[10px] rounded-full px-2">
+      🔴 Live
+    </Badge>
+  </div>
+</div>
                     </div>
                   </div>
                 </CardContent>
@@ -730,7 +779,7 @@ export default function LandingPage() {
                 <CardContent className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 pb-10 border-b border-border">
                 <div>
-                  <a href="#"><Logo dark={dark} size="text-2xl" /></a>
+                  <a href="#"><Logo size="text-2xl" /></a>
                   <p className="text-muted-foreground text-xs mt-3 leading-relaxed max-w-[200px]">Pakistan's fastest food delivery platform. Order in seconds.</p>
                   <div className="flex gap-2 mt-4">
                     {["𝕏","in","ig","fb"].map(s => (
