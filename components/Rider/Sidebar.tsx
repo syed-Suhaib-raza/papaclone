@@ -8,11 +8,9 @@ import {
   User,
   MessageSquare,
   LogOut,
-  Home,
 } from "lucide-react";
 
 const navItems = [
-  { href: "/rider/dashboard", label: "Dashboard", icon: Home },
   { href: "/rider/deliveries", label: "Deliveries", icon: Package },
   { href: "/rider/earnings", label: "Earnings", icon: TrendingUp },
   { href: "/rider/profile", label: "Profile", icon: User },
@@ -24,21 +22,25 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border h-screen fixed left-0 top-0 overflow-y-auto theme-transition flex flex-col">
-      
+
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border sticky top-0 bg-sidebar">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-3xl float-a">🍔</span>
+
           <div>
             <h1 className="text-lg font-black tracking-tight gradient-text">
               Smart Food
             </h1>
-            <p className="text-xs text-sidebar-foreground/60">Rider</p>
+
+            <p className="text-xs text-sidebar-foreground/60">
+              Rider
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Navigation Links */}
+      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -54,14 +56,14 @@ export default function Sidebar() {
                   : "text-sidebar-foreground hover:bg-sidebar-accent"
               }`}
             >
-              <Icon size={20} className={isActive ? "glow-btn" : ""} />
+              <Icon size={20} />
               <span className="font-medium">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Logout Button */}
+      {/* Logout */}
       <div className="p-4 border-t border-sidebar-border">
         <button className="w-full flex items-center gap-3 px-4 py-3 text-sidebar-foreground hover:bg-sidebar-accent rounded-lg transition-all group">
           <LogOut size={20} className="group-hover:float-a" />
