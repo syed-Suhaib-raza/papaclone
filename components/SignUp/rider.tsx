@@ -194,7 +194,6 @@ export default function RiderForm({ onSuccess }: Props) {
           rating:               null,
           total_deliveries:     0,
           status:               "inactive",
-          document_verified:    false,
         }, { onConflict: "id" })
       if (riderErr) throw new Error(`Riders table error: ${riderErr.message}`)
 

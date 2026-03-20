@@ -72,7 +72,7 @@ export default function SignUpPage() {
     setTimeout(() => {
       if (activeTab === "customer") router.push("/customer")
       if (activeTab === "owner")    router.push("/restaurant")
-      if (activeTab === "rider")    router.push("/rider/dashboard")
+      if (activeTab === "rider")    router.push("/rider")
     }, 1800)
   }
 

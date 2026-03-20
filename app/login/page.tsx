@@ -56,7 +56,7 @@ export default function LoginPage() {
 
     // 3. Redirect based on role
     if (profile?.role === "owner") { router.push("/restaurant");       return }
-    if (profile?.role === "rider") { router.push("/rider/dashboard"); return }
+    if (profile?.role === "rider") { router.push("/rider"); return }
     router.push("/customer") // customer
   }
 
