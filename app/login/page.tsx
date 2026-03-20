@@ -3,10 +3,10 @@
 import { supabase } from "@/lib/supaBaseClient"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Separator } from "@/components/ui/separator"
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle } from "lucide-react"
 import { useState } from "react"
-
 import ThemeToggle from "@/components/theme-toggle"
 
 function Logo() {
@@ -19,29 +19,55 @@ function Logo() {
 }
 
 export default function LoginPage() {
+  const router = useRouter()
 
   const [showPass, setShowPass] = useState(false)
-  const [email, setEmail] = useState("")
+  const [email,    setEmail]    = useState("")
   const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ── Email + password login via Supabase ───────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => setLoading(false), 1800)
-  }
+    setError("")
 
-  const loginWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${location.origin}/auth/callback`
-      }
+    // 1. Sign in with Supabase
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     })
 
     if (error) {
-      console.error("Google login error:", error.message)
+      setError(error.message)
+      setLoading(false)
+      return
     }
+
+    // 2. Get role from users table
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", data.user.id)
+      .single()
+
+    setLoading(false)
+
+    // 3. Redirect based on role
+    if (profile?.role === "owner") { router.push("/restaurant");       return }
+    if (profile?.role === "rider") { router.push("/rider/dashboard"); return }
+    router.push("/customer") // customer
+  }
+
+  // ── Google OAuth login ────────────────────────────────────
+  const loginWithGoogle = async () => {
+    setError("")
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${location.origin}/auth/callback` },
+    })
+    if (error) setError(error.message)
   }
 
   return (
@@ -84,8 +110,7 @@ export default function LoginPage() {
         <div
           className="absolute -inset-[1px] rounded-[2rem] pointer-events-none"
           style={{
-            background:
-              "linear-gradient(135deg, oklch(0.586 0.253 17.585 / 55%), oklch(0.645 0.246 16.439 / 25%), oklch(0.81 0.117 11.638 / 35%))"
+            background: "linear-gradient(135deg, oklch(0.586 0.253 17.585 / 55%), oklch(0.645 0.246 16.439 / 25%), oklch(0.81 0.117 11.638 / 35%))"
           }}
         />
 
@@ -96,26 +121,16 @@ export default function LoginPage() {
           <div
             className="absolute top-0 left-0 right-0 h-[2px]"
             style={{
-              background:
-                "linear-gradient(to right, oklch(0.586 0.253 17.585), oklch(0.645 0.246 16.439), oklch(0.81 0.117 11.638))"
+              background: "linear-gradient(to right, oklch(0.586 0.253 17.585), oklch(0.645 0.246 16.439), oklch(0.81 0.117 11.638))"
             }}
           />
 
           {/* Panda + Logo */}
           <div className="flex items-center justify-between mb-5">
             <Logo />
-
             <div className="relative">
               <div className="absolute inset-0 rounded-xl blur-lg scale-110 bg-[oklch(0.586_0.253_17.585/45%)]" />
-
-              <Image
-                src="/panda.svg"
-                alt="SmartFood mascot"
-                width={80}
-                height={80}
-                className="relative rounded-xl"
-              />
-
+              <Image src="/panda.svg" alt="SmartFood mascot" width={80} height={80} className="relative rounded-xl" />
               <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:border-[oklch(0.13_0.008_285)]" />
             </div>
           </div>
@@ -125,7 +140,6 @@ export default function LoginPage() {
             <h1 className="text-base font-black leading-tight mb-0.5 text-foreground">
               Welcome back 👋
             </h1>
-
             <p className="text-xs text-muted-foreground">
               Sign in to continue ordering
             </p>
@@ -139,14 +153,12 @@ export default function LoginPage() {
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Email
               </label>
-
               <div className="relative">
                 <Mail size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
                   className="w-full rounded-xl pl-9 pr-4 py-3 text-sm outline-none transition-all
@@ -158,41 +170,43 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="flex flex-col gap-2">
-
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Password
                 </label>
-
                 <a href="#" className="text-[10px] font-bold hover:underline text-chart-1">
                   Forgot?
                 </a>
               </div>
-
               <div className="relative">
                 <Lock size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-
                 <input
                   type={showPass ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   className="w-full rounded-xl pl-9 pr-10 py-3 text-sm outline-none transition-all
                     bg-muted border border-border text-foreground
                     focus:border-primary/70 placeholder:text-muted-foreground"
                 />
-
                 <button
                   type="button"
-                  onClick={() => setShowPass((s) => !s)}
+                  onClick={() => setShowPass(s => !s)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors text-muted-foreground"
                 >
                   {showPass ? <EyeOff size={13} /> : <Eye size={13} />}
                 </button>
               </div>
-
             </div>
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                <AlertCircle size={13} className="shrink-0"/>
+                {error}
+              </div>
+            )}
 
             {/* Submit */}
             <button
@@ -213,13 +227,11 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="flex items-center gap-2">
               <Separator className="flex-1 bg-border" />
-              <span className="text-[10px] font-semibold text-muted-foreground">
-                or continue with
-              </span>
+              <span className="text-[10px] font-semibold text-muted-foreground">or continue with</span>
               <Separator className="flex-1 bg-border" />
             </div>
 
-            {/* Google login */}
+            {/* Google */}
             <button
               type="button"
               onClick={loginWithGoogle}
@@ -229,8 +241,15 @@ export default function LoginPage() {
               Continue with Google
             </button>
 
-          </form>
+            {/* Sign up link */}
+            <p className="text-center text-xs text-muted-foreground">
+              Don't have an account?{" "}
+              <Link href="/SignUp" className="text-primary font-black hover:underline">
+                Sign up
+              </Link>
+            </p>
 
+          </form>
         </div>
       </div>
     </div>
