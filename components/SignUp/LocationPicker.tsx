@@ -82,11 +82,29 @@ export default function LocationPicker({ onLocationSelect }: LocationPickerProps
     // Default center: Karachi
     const map = L.map(mapRef.current).setView([24.8607, 67.0011], 13)
 
-    // OpenStreetMap tiles — completely free
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // Auto dark/light tiles based on current theme
+    const isDark = document.documentElement.classList.contains("dark")
+    const tileUrl = isDark
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+    L.tileLayer(tileUrl, {
       attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
       maxZoom: 19,
     }).addTo(map)
+
+    // Watch for theme changes and reload tiles
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.classList.contains("dark")
+      map.eachLayer((layer: any) => { if (layer._url) map.removeLayer(layer) })
+      L.tileLayer(
+        dark
+          ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { attribution: "© OpenStreetMap", maxZoom: 19 }
+      ).addTo(map)
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
 
     mapInstance.current = map
 
@@ -170,7 +188,7 @@ export default function LocationPicker({ onLocationSelect }: LocationPickerProps
             value={query}
             onChange={e => { setQuery(e.target.value); setResults([]) }}
             onKeyDown={e => e.key === "Enter" && (e.preventDefault(), handleSearch())}
-            placeholder="Search address in Pakistan..."
+            placeholder="🔍  Search address in Pakistan..."
             className="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none transition-all
               bg-muted border border-input text-foreground
               focus:border-primary/70 placeholder:text-muted-foreground"
