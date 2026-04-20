@@ -5,16 +5,18 @@ import { usePathname } from "next/navigation";
 import {
   Package,
   TrendingUp,
-  User,
-  MessageSquare,
+  Star,
+  Settings,
+  LifeBuoy,
   LogOut,
 } from "lucide-react";
 
-const navItems = [
+const navItems =[
   { href: "/rider/deliveries", label: "Deliveries", icon: Package },
-  { href: "/rider/earnings", label: "Earnings", icon: TrendingUp },
-  { href: "/rider/profile", label: "Profile", icon: User },
-  { href: "/rider/support", label: "Support", icon: MessageSquare },
+  { href: "/rider/analytics", label: "Analytics", icon: TrendingUp },
+  { href: "/rider/reviews", label: "Reviews", icon: Star },
+  { href: "/rider/settings", label: "Settings", icon: Settings },
+  { href: "/rider/support", label: "Support", icon: LifeBuoy },
 ];
 
 export default function Sidebar() {
