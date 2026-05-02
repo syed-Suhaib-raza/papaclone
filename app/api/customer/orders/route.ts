@@ -1,31 +1,29 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+function makeClient(token: string) {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  );
+}
 
 export async function GET(req: Request) {
   try {
     const authHeader = req.headers.get("authorization");
-
     if (!authHeader) {
       return NextResponse.json({ error: "No auth token" }, { status: 401 });
     }
 
     const token = authHeader.replace("Bearer ", "");
+    const supabase = makeClient(token);
 
-    // ✅ Safe auth check
     const { data, error: authError } = await supabase.auth.getUser(token);
-
     if (authError || !data.user) {
       return NextResponse.json({ error: "Invalid user" }, { status: 401 });
     }
 
-    const user = data.user;
-
-    // ✅ Fetch orders
     const { data: orders, error } = await supabase
       .from("orders")
       .select(`
@@ -40,7 +38,7 @@ export async function GET(req: Request) {
           menu_items ( name )
         )
       `)
-      .eq("customer_id", user.id)
+      .eq("customer_id", data.user.id)
       .order("created_at", { ascending: false });
 
     if (error) {

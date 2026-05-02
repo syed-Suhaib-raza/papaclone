@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Cusdashboard/Navbar";
 import Sidebar from "@/components/Cusdashboard/Sidebar";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
+import { supabase } from "@/lib/supaBaseClient";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -110,7 +105,7 @@ export default function OrdersPage() {
 
     if (ordersList.length === 0) {
       return (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl text-gray-600 dark:text-gray-400">
+        <div className="bg-card border border-border p-6 rounded-xl text-muted-foreground">
           {emptyMessage}
         </div>
       );
@@ -121,61 +116,53 @@ export default function OrdersPage() {
         {ordersList.map((order) => (
           <Card
             key={order.id}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition"
+            className="bg-card border border-border hover:border-primary/40 transition"
           >
             <CardContent className="p-5 space-y-4">
 
               {/* HEADER */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-semibold text-black dark:text-white">
+                  <h3 className="text-lg font-semibold">
                     {order.restaurants?.name || "Restaurant"}
                   </h3>
 
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Order ID: {order.id.slice(0, 8)}
                   </p>
 
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {new Date(order.created_at).toLocaleString()}
                   </p>
                 </div>
 
                 <span
-                  className={`px-3 py-1 text-xs rounded-full border ${getStatusStyle(
-                    order.status
-                  )}`}
+                  className={`px-3 py-1 text-xs rounded-full border ${getStatusStyle(order.status)}`}
                 >
                   {order.status.replaceAll("_", " ")}
                 </span>
               </div>
 
               {/* ITEMS */}
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  Items
-                </p>
+              <div className="bg-muted rounded-lg p-3 border border-border">
+                <p className="text-sm text-muted-foreground mb-2">Items</p>
 
                 {(order.order_items || []).map((item: any, i: number) => (
                   <div
                     key={i}
-                    className="flex justify-between text-sm text-gray-700 dark:text-gray-300"
+                    className="flex justify-between text-sm"
                   >
-                    <span>
-                      {item.menu_items?.name} × {item.quantity}
-                    </span>
-                    <span>₹{item.price_at_order}</span>
+                    <span>{item.menu_items?.name} × {item.quantity}</span>
+                    <span>PKR {item.price_at_order?.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
 
               {/* TOTAL */}
-              <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                <span className="text-gray-500 dark:text-gray-400 text-sm">
-                  Total Amount
-                </span>
+              <div className="flex justify-between pt-2 border-t border-border">
+                <span className="text-muted-foreground text-sm">Total Amount</span>
                 <span className="text-green-500 font-semibold">
-                  ₹{order.total_amount}
+                  PKR {order.total_amount?.toLocaleString()}
                 </span>
               </div>
 
@@ -187,7 +174,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-black text-black dark:text-white">
+    <div className="flex h-screen bg-background text-foreground">
       <Sidebar />
 
       <div className="flex-1 ml-64">
@@ -198,7 +185,7 @@ export default function OrdersPage() {
           {/* TITLE */}
           <div>
             <h1 className="text-3xl font-bold">My Orders</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               View your orders
             </p>
           </div>
