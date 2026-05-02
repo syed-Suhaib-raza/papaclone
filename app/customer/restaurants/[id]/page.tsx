@@ -191,21 +191,6 @@ export default function RestaurantMenuPage() {
             </div>
           </div>
 
-          {/* Map */}
-          {restaurant.latitude && restaurant.longitude && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <MapPin size={15} className="text-primary" />
-                Location
-              </div>
-              <RestaurantMap
-                lat={restaurant.latitude}
-                lng={restaurant.longitude}
-                name={restaurant.name}
-              />
-            </div>
-          )}
-
           {/* Menu */}
           <div className="space-y-8">
             <h2 className="text-xl font-bold">Menu</h2>
@@ -259,6 +244,20 @@ export default function RestaurantMenuPage() {
               </div>
             ))}
           </div>
+          {/* Map */}
+          {restaurant.latitude && restaurant.longitude && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <MapPin size={15} className="text-primary" />
+                Location
+              </div>
+              <RestaurantMap
+                lat={restaurant.latitude}
+                lng={restaurant.longitude}
+                name={restaurant.name}
+              />
+            </div>
+          )}
 
         </div>
       </div>
