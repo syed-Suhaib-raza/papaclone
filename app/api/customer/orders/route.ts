@@ -31,11 +31,13 @@ export async function GET(req: Request) {
         status,
         total_amount,
         created_at,
+        restaurant_id,
         restaurants ( name ),
         order_items (
+          item_id,
           quantity,
           price_at_order,
-          menu_items ( name )
+          menu_items ( name, image_url )
         )
       `)
       .eq("customer_id", data.user.id)

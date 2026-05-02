@@ -4,11 +4,15 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Cusdashboard/Navbar";
 import Sidebar from "@/components/Cusdashboard/Sidebar";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supaBaseClient";
+import { useCart } from "@/lib/cartContext";
+import { RefreshCw } from "lucide-react";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { cart, addToCart, setCartOpen } = useCart();
 
   useEffect(() => {
     let isMounted = true;
@@ -98,7 +102,27 @@ export default function OrdersPage() {
     }
   };
 
-  const renderOrders = (ordersList: any[], emptyMessage: string) => {
+  function handleReorder(order: any) {
+    const restaurantId: string = order.restaurant_id;
+    const restaurantName: string = order.restaurants?.name ?? "Restaurant";
+
+    if (cart && cart.restaurantId !== restaurantId) {
+      if (!confirm(`Your cart has items from "${cart.restaurantName}". Reordering will replace your cart. Continue?`)) return;
+    }
+
+    for (const item of order.order_items ?? []) {
+      addToCart(restaurantId, restaurantName, {
+        id: item.item_id,
+        name: item.menu_items?.name ?? "Item",
+        price: Number(item.price_at_order),
+        image_url: item.menu_items?.image_url ?? null,
+      });
+    }
+
+    setCartOpen(true);
+  }
+
+  const renderOrders = (ordersList: any[], emptyMessage: string, showReorder = false) => {
     if (loading) {
       return <p className="text-gray-500 dark:text-gray-400">Loading orders...</p>;
     }
@@ -158,12 +182,20 @@ export default function OrdersPage() {
                 ))}
               </div>
 
-              {/* TOTAL */}
-              <div className="flex justify-between pt-2 border-t border-border">
+              {/* TOTAL + REORDER */}
+              <div className="flex justify-between items-center pt-2 border-t border-border">
                 <span className="text-muted-foreground text-sm">Total Amount</span>
-                <span className="text-green-500 font-semibold">
-                  PKR {order.total_amount?.toLocaleString()}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-green-500 font-semibold">
+                    PKR {order.total_amount?.toLocaleString()}
+                  </span>
+                  {showReorder && (
+                    <Button size="sm" variant="outline" onClick={() => handleReorder(order)}>
+                      <RefreshCw size={13} className="mr-1" />
+                      Reorder
+                    </Button>
+                  )}
+                </div>
               </div>
 
             </CardContent>
@@ -195,7 +227,7 @@ export default function OrdersPage() {
             <h2 className="text-xl font-semibold mb-4 text-yellow-500">
               Current Orders
             </h2>
-            {renderOrders(currentOrders, "No current orders found")}
+            {renderOrders(currentOrders, "No current orders found", false)}
           </div>
 
           {/* PAST */}
@@ -203,7 +235,7 @@ export default function OrdersPage() {
             <h2 className="text-xl font-semibold mb-4 text-green-500">
               Past Orders
             </h2>
-            {renderOrders(pastOrders, "No past orders found")}
+            {renderOrders(pastOrders, "No past orders found", true)}
           </div>
 
         </div>
