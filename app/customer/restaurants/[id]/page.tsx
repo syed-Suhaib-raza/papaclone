@@ -132,7 +132,7 @@ export default function RestaurantMenuPage() {
     return (
       <div className="flex">
         <Sidebar />
-        <div className="flex-1">
+        <div className="flex-1 ml-64">
           <Navbar />
           <div className="p-6 text-muted-foreground">Loading menu...</div>
         </div>
@@ -144,7 +144,7 @@ export default function RestaurantMenuPage() {
     return (
       <div className="flex">
         <Sidebar />
-        <div className="flex-1">
+        <div className="flex-1 ml-64">
           <Navbar />
           <div className="p-6 text-muted-foreground">Restaurant not found.</div>
         </div>
@@ -156,7 +156,7 @@ export default function RestaurantMenuPage() {
     <div className="flex">
       <Sidebar />
 
-      <div className="flex-1 min-h-screen">
+      <div className="flex-1 min-h-screen ml-64">
         <Navbar />
 
         <div className="max-w-4xl mx-auto p-6 space-y-8">

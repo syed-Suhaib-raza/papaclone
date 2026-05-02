@@ -16,7 +16,7 @@ export default async function MenuPage() {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1">
+      <div className="flex-1 ml-64">
         <Navbar />
         <div className="p-6 space-y-6">
           <MenuManagement accessToken={session.access_token} />

@@ -240,7 +240,7 @@ export default function AnalyticsPage() {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-64">
         <Navbar />
 
         <main className="p-4 space-y-6">

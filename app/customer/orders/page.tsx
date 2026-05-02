@@ -190,7 +190,7 @@ export default function OrdersPage() {
     <div className="flex h-screen bg-white dark:bg-black text-black dark:text-white">
       <Sidebar />
 
-      <div className="flex-1">
+      <div className="flex-1 ml-64">
         <Navbar />
 
         <div className="p-6 space-y-10">

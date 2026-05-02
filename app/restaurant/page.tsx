@@ -29,7 +29,7 @@ export default async function Dashboard() {
 
       <Sidebar/>
 
-      <div className="flex-1">
+      <div className="flex-1 ml-64">
 
         <Navbar/>
 

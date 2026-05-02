@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Package,
   TrendingUp,
@@ -10,6 +10,7 @@ import {
   LifeBuoy,
   LogOut,
 } from "lucide-react";
+import { supabase } from "@/lib/supaBaseClient";
 
 const navItems =[
   { href: "/rider/deliveries", label: "Deliveries", icon: Package },
@@ -21,6 +22,12 @@ const navItems =[
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push("/login")
+  }
 
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border h-screen fixed left-0 top-0 overflow-y-auto theme-transition flex flex-col">
@@ -67,7 +74,7 @@ export default function Sidebar() {
 
       {/* Logout */}
       <div className="p-4 border-t border-sidebar-border">
-        <button className="w-full flex items-center gap-3 px-4 py-3 text-sidebar-foreground hover:bg-sidebar-accent rounded-lg transition-all group">
+        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sidebar-foreground hover:bg-sidebar-accent rounded-lg transition-all group">
           <LogOut size={20} className="group-hover:float-a" />
           <span className="font-medium">Logout</span>
         </button>

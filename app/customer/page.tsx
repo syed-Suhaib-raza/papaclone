@@ -63,7 +63,7 @@ export default function Dashboard() {
 
       <Sidebar />
 
-      <div className="flex-1">
+      <div className="flex-1 ml-64">
 
         <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
