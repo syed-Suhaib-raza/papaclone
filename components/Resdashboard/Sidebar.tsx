@@ -5,7 +5,6 @@ import {
   ClipboardList,
   UtensilsCrossed,
   BarChart3,
-  Star,
   Settings,
   LogOut
 } from "lucide-react"
@@ -46,14 +45,6 @@ export default function RestaurantSidebar() {
         >
           <BarChart3 size={18} />
           Analytics
-        </Link>
-
-        <Link
-          href="/restaurant/reviews"
-          className="flex items-center gap-3 p-3 rounded-lg card-hover"
-        >
-          <Star size={18} />
-          Reviews
         </Link>
 
         <Link
