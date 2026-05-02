@@ -3,7 +3,12 @@
 import { ShoppingCart, Bell, Search } from "lucide-react"
 import ThemeToggle from "@/components/theme-toggle"
 
-export default function Navbar() {
+interface NavbarProps {
+  searchQuery?: string
+  onSearchChange?: (value: string) => void
+}
+
+export default function Navbar({ searchQuery = "", onSearchChange }: NavbarProps) {
 
   return (
     <header className="w-full h-16 border-b border-border flex items-center justify-between px-6 bg-background">
@@ -15,6 +20,8 @@ export default function Navbar() {
         <input
           placeholder="Search restaurants or food..."
           className="bg-muted text-sm px-4 py-1.5 rounded-md outline-none focus:ring-2 ring-primary/40 transition"
+          value={searchQuery}
+          onChange={(e) => onSearchChange?.(e.target.value)}
         />
       </div>
 

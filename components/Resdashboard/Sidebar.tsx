@@ -15,7 +15,7 @@ export default function RestaurantSidebar() {
     <aside className="w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col p-4">
 
       {/* Logo */}
-      <Link href="/restaurant/dashboard" className="flex items-center gap-3 mb-8">
+      <Link href="/restaurant" className="flex items-center gap-3 mb-8">
         <h2 className="text-xl font-bold gradient-text">
           SmartFood
         </h2>

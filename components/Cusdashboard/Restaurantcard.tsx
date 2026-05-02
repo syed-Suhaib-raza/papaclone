@@ -1,13 +1,16 @@
+import Link from "next/link"
+
 interface Props {
+  id: string
   name: string
   image: string
   rating: number
   description: string
 }
 
-export default function RestaurantCard({ name, image, rating, description }: Props) {
+export default function RestaurantCard({ id, name, image, rating, description }: Props) {
   return (
-    <div className="card-hover border rounded-xl overflow-hidden bg-card">
+    <Link href={`/customer/restaurants/${id}`} className="card-hover border rounded-xl overflow-hidden bg-card block">
 
       <img
         src={image || "/placeholder.png"}
@@ -31,6 +34,6 @@ export default function RestaurantCard({ name, image, rating, description }: Pro
 
       </div>
 
-    </div>
+    </Link>
   )
 }

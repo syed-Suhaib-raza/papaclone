@@ -14,11 +14,6 @@ export default function Sidebar() {
       </Link>
       <nav className="flex flex-col gap-2 flex-1">
 
-        <Link href="/customer/restaurants" className="flex items-center gap-3 p-3 rounded-lg card-hover">
-          <Store size={18}/>
-          Restaurants
-        </Link>
-
         <Link href="/customer/orders" className="flex items-center gap-3 p-3 rounded-lg card-hover">
           <Package size={18}/>
           Orders

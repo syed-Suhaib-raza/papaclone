@@ -8,14 +8,7 @@ export default function RestaurantNavbar() {
   return (
     <header className="w-full h-16 border-b border-border flex items-center justify-between px-6 bg-background">
 
-      {/* Search */}
       <div className="flex items-center gap-3">
-        <Search size={18} className="text-muted-foreground" />
-
-        <input
-          placeholder="Search orders or menu..."
-          className="bg-muted text-sm px-4 py-1.5 rounded-md outline-none focus:ring-2 ring-primary/40 transition"
-        />
       </div>
 
       {/* Right side */}
