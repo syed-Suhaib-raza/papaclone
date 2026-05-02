@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Star, MapPin } from "lucide-react"
+import { ArrowLeft, Star, MapPin, Plus, Minus, ShoppingCart } from "lucide-react"
 import Sidebar from "@/components/Cusdashboard/Sidebar"
 import Navbar from "@/components/Cusdashboard/Navbar"
 import { supabase } from "@/lib/supaBaseClient"
+import { useCart } from "@/lib/cartContext"
 
 interface MenuItem {
   id: string
@@ -93,10 +94,12 @@ function RestaurantMap({ lat, lng, name }: { lat: number; lng: number; name: str
 export default function RestaurantMenuPage() {
   const { id } = useParams<{ id: string }>()
   const router  = useRouter()
+  const { cart, addToCart, updateQuantity, removeFromCart } = useCart()
 
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [menuItems,  setMenuItems]  = useState<MenuItem[]>([])
   const [loading,    setLoading]    = useState(true)
+  const [switchWarning, setSwitchWarning] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -127,6 +130,21 @@ export default function RestaurantMenuPage() {
   }, [id])
 
   const grouped = groupByCategory(menuItems)
+
+  function getItemQty(itemId: string) {
+    return cart?.items.find((i) => i.id === itemId)?.quantity ?? 0
+  }
+
+  function handleAdd(item: MenuItem) {
+    if (cart && cart.restaurantId !== id) setSwitchWarning(true)
+    addToCart(id!, restaurant!.name, {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image_url: item.image_url,
+    })
+    setSwitchWarning(false)
+  }
 
   if (loading) {
     return (
@@ -191,6 +209,16 @@ export default function RestaurantMenuPage() {
             </div>
           </div>
 
+          {/* One-store switch notice */}
+          {cart && cart.restaurantId !== id && cart.items.length > 0 && (
+            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-xl p-4 text-sm">
+              <ShoppingCart size={16} className="mt-0.5 shrink-0" />
+              <span>
+                Your cart has items from <strong>{cart.restaurantName}</strong>. Adding an item here will replace your current cart.
+              </span>
+            </div>
+          )}
+
           {/* Menu */}
           <div className="space-y-8">
             <h2 className="text-xl font-bold">Menu</h2>
@@ -233,8 +261,34 @@ export default function RestaurantMenuPage() {
                           <span className="text-sm font-semibold">
                             PKR {item.price?.toLocaleString()}
                           </span>
-                          {!item.available && (
+                          {!item.available ? (
                             <span className="text-xs text-destructive">Unavailable</span>
+                          ) : getItemQty(item.id) === 0 ? (
+                            <button
+                              onClick={() => handleAdd(item)}
+                              className="flex items-center gap-1 text-xs font-medium bg-primary text-primary-foreground px-2.5 py-1 rounded-lg hover:opacity-90 transition"
+                            >
+                              <Plus size={12} />
+                              Add
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => updateQuantity(item.id, getItemQty(item.id) - 1)}
+                                className="w-6 h-6 rounded-md bg-muted hover:bg-muted/80 flex items-center justify-center transition"
+                              >
+                                <Minus size={11} />
+                              </button>
+                              <span className="w-5 text-center text-sm font-semibold">
+                                {getItemQty(item.id)}
+                              </span>
+                              <button
+                                onClick={() => handleAdd(item)}
+                                className="w-6 h-6 rounded-md bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center transition"
+                              >
+                                <Plus size={11} />
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>

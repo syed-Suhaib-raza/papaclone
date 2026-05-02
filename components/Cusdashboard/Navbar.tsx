@@ -2,6 +2,7 @@
 
 import { ShoppingCart, Bell, Search } from "lucide-react"
 import ThemeToggle from "@/components/theme-toggle"
+import { useCart } from "@/lib/cartContext"
 
 interface NavbarProps {
   searchQuery?: string
@@ -9,6 +10,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ searchQuery = "", onSearchChange }: NavbarProps) {
+  const { cartCount, setCartOpen } = useCart()
 
   return (
     <header className="w-full h-16 border-b border-border flex items-center justify-between px-6 bg-background">
@@ -35,8 +37,13 @@ export default function Navbar({ searchQuery = "", onSearchChange }: NavbarProps
         </button>
 
         {/* Cart */}
-        <button className="text-muted-foreground hover:text-foreground transition">
+        <button onClick={() => setCartOpen(true)} className="relative text-muted-foreground hover:text-foreground transition">
           <ShoppingCart size={20}/>
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+              {cartCount > 99 ? "99+" : cartCount}
+            </span>
+          )}
         </button>
 
         {/* Theme Toggle */}
