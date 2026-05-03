@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import {
   Home, Users as UsersIcon, UtensilsCrossed, BarChart3, 
   Settings, Search, Menu, X, TrendingUp, TrendingDown, 
@@ -15,7 +15,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetTrigger, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription 
+} from "@/components/ui/sheet"
 import ThemeToggle from "@/components/theme-toggle"
 import StatusBadge from "@/components/admin/StatusBadge"
 import ChartTooltip from "@/components/admin/ChartTooltip"
@@ -25,13 +32,14 @@ import {
   CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer,
 } from "recharts"
 
-// Sub pages
+// Sub pages (Ensure these paths match your folder structure)
 import UsersPage from "./usermanage/page"
 import Restaurants from "./resmanage/page"
 import Analytics from "./analytics/page"
 import SettingsPage from "./settings/page"
 import AlertsPage from "./alerts/page" 
 
+// --- DASHBOARD CONTENT SUB-COMPONENT ---
 function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +50,7 @@ function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
       const json = await res.json();
       setData(json);
     } catch (err) { 
-      console.error(err); 
+      console.error("Dashboard Fetch Error:", err); 
     } finally { 
       setLoading(false); 
     }
@@ -50,24 +58,17 @@ function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // --- EXPORT FEATURE (Branded as SmartFood) ---
   const handleExport = () => {
     if (!data || !data.recentOrders) return;
-
     const headers = ["Order ID", "Customer", "Amount", "Status"];
     const rows = data.recentOrders.map((o: any) => [
-      o.id,
-      o.customer,
-      `"${o.amount}"`, 
-      o.status
+      o.id, o.customer, `"${o.amount}"`, o.status
     ]);
-
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    // Branded filename
     link.setAttribute("download", `SmartFood_Report_${new Date().toLocaleDateString()}.csv`);
     document.body.appendChild(link);
     link.click();
@@ -98,10 +99,10 @@ function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
         </div>
       </div>
 
-      {/* Stat Cards */}
+      {/* STATS CARDS - Fixed Keys */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {data.stats.map((s: any, i: number) => (
-          <Card key={s.label} className="bg-card border-border rounded-2xl theme-transition">
+          <Card key={`stat-${s.label}-${i}`} className="bg-card border-border rounded-2xl theme-transition">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-muted-foreground font-bold">{s.label}</p>
@@ -129,45 +130,37 @@ function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 mb-4">
+        {/* RECENT ORDERS - Fixed Keys */}
         <Card className="bg-card border-border rounded-2xl theme-transition">
           <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-black text-foreground">Recent Orders</h3>
-              <p className="text-[10px] text-muted-foreground font-bold">Latest 5 orders</p>
-            </div>
+            <h3 className="font-black text-foreground mb-4">Recent Orders</h3>
             <div className="flex flex-col gap-4">
-              {data.recentOrders && data.recentOrders.length > 0 ? data.recentOrders.map((o: any) => (
-                <div key={o.id} className="flex items-center justify-between">
+              {data.recentOrders?.map((o: any, idx: number) => (
+                <div key={`order-${o.id}-${idx}`} className="flex items-center justify-between">
                    <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">ORD</div>
                       <div>
                         <p className="text-xs font-bold">{o.customer}</p>
-                        <p className="text-[10px] text-muted-foreground">Order Ref: {o.id.slice(0,5)}</p>
+                        <p className="text-[10px] text-muted-foreground">Order Ref: {o.id?.slice(0,5) || "N/A"}</p>
                       </div>
                    </div>
                    <StatusBadge status={o.status}/>
                 </div>
-              )) : <p className="text-center text-muted-foreground text-xs py-4 italic">No recent orders found</p>}
+              ))}
             </div>
           </CardContent>
         </Card>
 
+        {/* TOP RESTAURANTS - Fixed Keys */}
         <Card className="bg-card border-border rounded-2xl theme-transition">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-black text-foreground">Top Restaurants</h3>
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="text-primary text-xs font-bold h-auto p-0"
-                onClick={() => setPage("restaurants")}
-              >
-                View all →
-              </Button>
+              <Button variant="link" size="sm" className="text-primary text-xs font-bold h-auto p-0" onClick={() => setPage("restaurants")}>View all →</Button>
             </div>
             <div className="flex flex-col gap-4">
-              {data.topRestaurants.map((r: any) => (
-                <div key={r.id} className="flex items-center justify-between">
+              {data.topRestaurants.map((r: any, idx: number) => (
+                <div key={`res-${r.id}-${idx}`} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-lg">🍽️</div>
                     <div>
@@ -204,8 +197,10 @@ function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
   )
 }
 
+// --- MAIN PAGE COMPONENT ---
 export default function AdminPage() {
   const [activePage, setActivePage] = useState("dashboard")
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   const PAGE_MAP: Record<string, React.ReactNode> = {
     dashboard: <DashboardContent setPage={setActivePage}/>,
@@ -227,7 +222,7 @@ export default function AdminPage() {
 
   function SidebarNav({ onClose }: { onClose?: () => void }) {
     return (
-      <>
+      <div className="flex flex-col h-full">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <span className="font-black text-lg">
             🍕 <span className="text-foreground">Smart</span>
@@ -277,7 +272,7 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-      </>
+      </div>
     )
   }
 
@@ -290,14 +285,20 @@ export default function AdminPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between px-6 py-3 bg-card border-b border-border theme-transition flex-shrink-0">
           <div className="flex items-center gap-3">
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="lg:hidden">
                   <Menu size={20}/>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64 flex flex-col">
-                <SidebarNav onClose={() => {}}/>
+              <SheetContent side="left" className="p-0 w-72 flex flex-col">
+                <div className="sr-only">
+                  <SheetHeader>
+                    <SheetTitle>Admin Navigation</SheetTitle>
+                    <SheetDescription>Mobile navigation sidebar</SheetDescription>
+                  </SheetHeader>
+                </div>
+                <SidebarNav onClose={() => setIsSheetOpen(false)}/>
               </SheetContent>
             </Sheet>
 
@@ -309,7 +310,6 @@ export default function AdminPage() {
               />
             </div>
           </div>
-
           <div className="flex items-center gap-2">
             <ThemeToggle/>
           </div>
