@@ -35,12 +35,12 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border sticky top-0 bg-sidebar">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-3xl float-a">🍔</span>
-
           <div>
-            <h1 className="text-lg font-black tracking-tight gradient-text">
-              Smart Food
-            </h1>
+            <Link href="/rider" className="flex items-center gap-2">
+              <h1 className="text-lg font-black tracking-tight gradient-text">
+                Smart Food
+              </h1>
+            </Link>
 
             <p className="text-xs text-sidebar-foreground/60">
               Rider

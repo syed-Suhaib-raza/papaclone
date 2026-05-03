@@ -26,11 +26,11 @@ import {
 } from "recharts"
 
 // Sub pages
-import UsersPage from "./User_Management/Page_User"
-import Restaurants from "./Restaurant_Management/Page_Restaurant"
-import Analytics from "./Analytics/Page_Analytics"
-import SettingsPage from "./Settings/Page_Settings"
-import AlertsPage from "./Alerts/Page_Alerts" 
+import UsersPage from "./usermanage/page"
+import Restaurants from "./resmanage/page"
+import Analytics from "./analytics/page"
+import SettingsPage from "./settings/page"
+import AlertsPage from "./alerts/page" 
 
 function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
   const [data, setData] = useState<any>(null);
