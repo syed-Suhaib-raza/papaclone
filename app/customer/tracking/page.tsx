@@ -7,11 +7,13 @@ import { io, Socket } from "socket.io-client"
 import { supabase } from "@/lib/supaBaseClient"
 import Sidebar from "@/components/Cusdashboard/Sidebar"
 import Navbar from "@/components/Cusdashboard/Navbar"
+import RatingPopup from "@/components/Customer/RatingPopup"
 
 interface OrderTracking {
   id: string
   status: string
   rider_id: string | null
+  restaurant_id: string | null
   restaurants: { name: string; latitude: number; longitude: number } | null
   addresses: { street: string; city: string; latitude: number | null; longitude: number | null } | null
   deliveries: { accepted_at: string | null; status: string }[] | null
@@ -53,6 +55,7 @@ export default function TrackingPage() {
   const [order, setOrder] = useState<OrderTracking | null>(null)
   const [riderContact, setRiderContact] = useState<{ name: string; phone: string | null } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showRatingPopup, setShowRatingPopup] = useState(false)
   const [riderLat, setRiderLat] = useState<number | null>(null)
   const [riderLng, setRiderLng] = useState<number | null>(null)
 
@@ -78,6 +81,10 @@ export default function TrackingPage() {
       const found = orders.find((o: any) => o.id === orderId) ?? null
       setOrder(found)
       setLoading(false)
+
+      if (found?.status === "delivered" && !localStorage.getItem(`reviewed_${orderId}`)) {
+        setShowRatingPopup(true)
+      }
 
       if (found?.rider_id) {
         const { data: riderData } = await supabase
@@ -129,6 +136,27 @@ export default function TrackingPage() {
     if (riderLat == null || riderLng == null || !riderMarkerRef.current) return
     riderMarkerRef.current.setLatLng([riderLat, riderLng])
   }, [riderLat, riderLng])
+
+  // Poll for order status changes to detect delivery in real time
+  useEffect(() => {
+    if (!orderId || order?.status === "delivered") return
+    const interval = setInterval(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch("/api/customer/orders", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (!res.ok) return
+      const orders = await res.json()
+      const found = orders.find((o: any) => o.id === orderId) ?? null
+      if (!found) return
+      setOrder(found)
+      if (found.status === "delivered" && !localStorage.getItem(`reviewed_${orderId}`)) {
+        setShowRatingPopup(true)
+      }
+    }, 15_000)
+    return () => clearInterval(interval)
+  }, [orderId, order?.status])
 
   // Build map once order is loaded
   useEffect(() => {
@@ -251,6 +279,17 @@ export default function TrackingPage() {
   return (
     <div className="flex h-screen bg-background text-foreground">
       <Sidebar />
+      {order && (
+        <RatingPopup
+          open={showRatingPopup}
+          orderId={order.id}
+          restaurantId={order.restaurant_id ?? ""}
+          restaurantName={order.restaurants?.name ?? "the restaurant"}
+          riderId={order.rider_id}
+          riderName={riderContact?.name ?? null}
+          onClose={() => setShowRatingPopup(false)}
+        />
+      )}
       <div className="flex-1 ml-64 flex flex-col overflow-hidden">
         <Navbar />
 
