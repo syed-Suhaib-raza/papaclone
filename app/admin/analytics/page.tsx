@@ -16,8 +16,8 @@ interface AnalyticsData {
   categories:     { name: string; orders: number; pct: number; color: string }[]
   kpis: {
     avgOrderValue:  string; avgChange:   string
-    profitMargin:   string; pmChange:    string
-    conversionRate: string; crChange:    string
+    successRate:    string; pmChange:    string
+    cancelRate:     string; crChange:    string
     customerGrowth: string; cgChange:    string
     repeatRate:     string; rrChange:    string
     avgDelivery:    string; adChange:    string
@@ -130,8 +130,8 @@ function downloadCSV(data: AnalyticsData) {
     [],
     ["KPI", "Value", "Change"],
     ["Avg Order Value",  data.kpis.avgOrderValue,  data.kpis.avgChange],
-    ["Profit Margin",    data.kpis.profitMargin,   data.kpis.pmChange],
-    ["Conversion Rate",  data.kpis.conversionRate, data.kpis.crChange],
+    ["Success Rate",     data.kpis.successRate,    data.kpis.pmChange],
+    ["Cancel Rate",      data.kpis.cancelRate,     data.kpis.crChange],
     ["Customer Growth",  data.kpis.customerGrowth, data.kpis.cgChange],
     ["Repeat Rate",      data.kpis.repeatRate,     data.kpis.rrChange],
     ["Avg Delivery",     data.kpis.avgDelivery,    data.kpis.adChange],
@@ -166,8 +166,8 @@ export default function AnalyticsPage() {
           peakHours:      d.peakHours      ?? [],
           categories:     d.categories     ?? [],
           kpis:           d.kpis           ?? {
-            avgOrderValue:"—", avgChange:"—", profitMargin:"—", pmChange:"—",
-            conversionRate:"—", crChange:"—", customerGrowth:"—", cgChange:"—",
+            avgOrderValue:"—", avgChange:"—", successRate:"—", pmChange:"—",
+            cancelRate:"—", crChange:"—", customerGrowth:"—", cgChange:"—",
             repeatRate:"—", rrChange:"—", avgDelivery:"—", adChange:"—",
           },
         })
@@ -199,8 +199,8 @@ export default function AnalyticsPage() {
 
   const KPIS = [
     { label:"Avg Order Value",  val:data.kpis.avgOrderValue,  change:data.kpis.avgChange,   up:true,  icon:<ShoppingBag size={17}/>, color:"var(--primary)" },
-    { label:"Profit Margin",    val:data.kpis.profitMargin,   change:data.kpis.pmChange,    up:true,  icon:<TrendingUp  size={17}/>, color:"oklch(0.627 0.194 149.214)" },
-    { label:"Conversion Rate",  val:data.kpis.conversionRate, change:data.kpis.crChange,    up:false, icon:<Target      size={17}/>, color:"var(--destructive)" },
+    { label:"Success Rate",     val:data.kpis.successRate,    change:data.kpis.pmChange,    up:true,  icon:<TrendingUp  size={17}/>, color:"oklch(0.627 0.194 149.214)" },
+    { label:"Cancel Rate",      val:data.kpis.cancelRate,     change:data.kpis.crChange,    up:false, icon:<Target      size={17}/>, color:"var(--destructive)" },
     { label:"Customer Growth",  val:data.kpis.customerGrowth, change:data.kpis.cgChange,    up:true,  icon:<Users       size={17}/>, color:"var(--chart-2)" },
     { label:"Repeat Rate",      val:data.kpis.repeatRate,     change:data.kpis.rrChange,    up:true,  icon:<Activity    size={17}/>, color:"oklch(0.581 0.176 273.528)" },
     { label:"Avg Delivery",     val:data.kpis.avgDelivery,    change:data.kpis.adChange,    up:true,  icon:<Clock       size={17}/>, color:"oklch(0.795 0.184 86.047)" },
