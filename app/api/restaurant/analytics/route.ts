@@ -34,8 +34,9 @@ export async function GET(req: Request) {
         .eq("restaurant_id", restaurant.id),
       supabase
         .from("reviews")
-        .select("rating, comment, created_at")
-        .eq("restaurant_id", restaurant.id),
+        .select("id, rating, comment, created_at, users(name)")
+        .eq("restaurant_id", restaurant.id)
+        .order("created_at", { ascending: false }),
     ])
 
     if (ordersError) return NextResponse.json({ error: ordersError.message }, { status: 500 })

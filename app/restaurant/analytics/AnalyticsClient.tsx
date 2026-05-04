@@ -8,7 +8,7 @@ import {
 import { useChartTheme } from "@/lib/useChartTheme"
 
 type Order = { id: string; total_amount: string | number; created_at: string; status: string }
-type Review = { id: string; rating: number; created_at: string }
+type Review = { id: string; rating: number; comment: string | null; created_at: string; users: { name: string } | null }
 type Item = { order_id: string; quantity: number; menu_items: { name: string } | null }
 
 function CustomTooltip({ active, payload, label, cardBg, foreground, border }: any) {
@@ -285,6 +285,37 @@ export default function AnalyticsClient({ accessToken }: { accessToken: string }
               <div key={i} className="bg-muted rounded-lg p-3 text-center">
                 <p className="text-sm font-medium">{item.name}</p>
                 <p className="text-lg font-semibold text-primary mt-1">{item.quantity}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Customer Reviews */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold">Customer Reviews</h2>
+          <span className="text-sm text-muted-foreground">{reviews.length} total</span>
+        </div>
+
+        {reviews.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No reviews yet.</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {reviews.map((review) => (
+              <div key={review.id} className="bg-muted rounded-lg p-3 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-sm">{review.users?.name ?? "Anonymous"}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="text-yellow-500 text-sm tracking-wide">
+                  {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                </div>
+                {review.comment && (
+                  <p className="text-sm text-muted-foreground">{review.comment}</p>
+                )}
               </div>
             ))}
           </div>
