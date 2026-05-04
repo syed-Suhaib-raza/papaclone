@@ -118,7 +118,7 @@ export default function OrdersPage() {
         name: item.menu_items?.name ?? "Item",
         price: Number(item.price_at_order),
         image_url: item.menu_items?.image_url ?? null,
-      });
+      }, item.quantity ?? 1);
     }
 
     setCartOpen(true);

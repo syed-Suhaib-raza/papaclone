@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supaBaseClient"
-import { Cart } from "@/lib/cartContext"
+import { Cart, useCart } from "@/lib/cartContext"
 
 type PendingOrder = {
   cart: Cart
@@ -17,6 +17,7 @@ type Status = "loading" | "success" | "error"
 export default function CheckoutSuccessPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { clearCart } = useCart()
   const [status, setStatus] = useState<Status>("loading")
   const [orderId, setOrderId] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -74,6 +75,7 @@ export default function CheckoutSuccessPage() {
 
       // 3. Clean up
       localStorage.removeItem("smartfood_pending_order")
+      clearCart()
 
       setOrderId(order.id)
       setStatus("success")

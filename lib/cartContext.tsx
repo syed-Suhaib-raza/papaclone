@@ -21,7 +21,7 @@ type CartContext = {
   cartCount: number
   cartOpen: boolean
   setCartOpen: (open: boolean) => void
-  addToCart: (restaurantId: string, restaurantName: string, item: Omit<CartItem, "quantity">) => void
+  addToCart: (restaurantId: string, restaurantName: string, item: Omit<CartItem, "quantity">, quantity?: number) => void
   removeFromCart: (itemId: string) => void
   updateQuantity: (itemId: string, quantity: number) => void
   clearCart: () => void
@@ -42,7 +42,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [])
 
-  function addToCart(restaurantId: string, restaurantName: string, item: Omit<CartItem, "quantity">) {
+  function addToCart(restaurantId: string, restaurantName: string, item: Omit<CartItem, "quantity">, quantity = 1) {
     setCart((prev) => {
       let base: Cart
 
@@ -55,10 +55,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existing = base.items.find((i) => i.id === item.id)
       if (existing) {
         base.items = base.items.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i
         )
       } else {
-        base.items = [...base.items, { ...item, quantity: 1 }]
+        base.items = [...base.items, { ...item, quantity }]
       }
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(base))

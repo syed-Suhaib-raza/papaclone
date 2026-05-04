@@ -9,6 +9,12 @@ function makeClient(token: string) {
   )
 }
 
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+)
+
 export async function POST(req: Request) {
   try {
     const token = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -35,6 +41,19 @@ export async function POST(req: Request) {
       comment: restaurantComment || null,
     })
     if (reviewError) return NextResponse.json({ error: reviewError.message }, { status: 500 })
+
+    const { data: allReviews } = await supabaseAdmin
+      .from("reviews")
+      .select("rating")
+      .eq("restaurant_id", restaurantId)
+
+    if (allReviews && allReviews.length > 0) {
+      const avg = allReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / allReviews.length
+      await supabaseAdmin
+        .from("restaurants")
+        .update({ rating: Math.round(avg * 100) / 100 })
+        .eq("id", restaurantId)
+    }
 
     if (riderId) {
       const { error: riderReviewError } = await supabase.from("rider_reviews").insert({
