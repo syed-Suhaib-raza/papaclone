@@ -11,7 +11,7 @@ type Delivery = {
   id: string
   pickup_time: string | null
   delivery_time: string | null
-  orders: { total_amount: string | number } | null
+  orders: { total_amount: string | number; commissions: { commission_amount: string | number }[] | null } | null
 }
 type Review = { rating: number; created_at: string }
 
@@ -79,12 +79,12 @@ export default function RiderAnalyticsClient({ accessToken }: { accessToken: str
     : filtered
 
   const totalDeliveries = selected.length
-  const totalRevenue = selected.reduce((s, d) => s + Number(d.orders?.total_amount ?? 0), 0)
+  const totalRevenue = selected.reduce((s, d) => s + Number(d.orders?.commissions?.[0]?.commission_amount ?? 0), 0)
 
   const dayRevenue: Record<string, number> = {}
   selected.forEach((d) => {
     const k = getDate(d).toLocaleDateString()
-    dayRevenue[k] = (dayRevenue[k] ?? 0) + Number(d.orders?.total_amount ?? 0)
+    dayRevenue[k] = (dayRevenue[k] ?? 0) + Number(d.orders?.commissions?.[0]?.commission_amount ?? 0)
   })
   const bestDay = Object.entries(dayRevenue).sort((a, b) => b[1] - a[1])[0]
 
@@ -107,7 +107,7 @@ export default function RiderAnalyticsClient({ accessToken }: { accessToken: str
     filtered.forEach((d) => {
       const key = getKey(getDate(d))
       const found = slots.find((s) => s.date === key)
-      if (found) { found.revenue += Number(d.orders?.total_amount ?? 0); found.deliveries += 1 }
+      if (found) { found.revenue += Number(d.orders?.commissions?.[0]?.commission_amount ?? 0); found.deliveries += 1 }
     })
     return slots
   }
@@ -131,7 +131,7 @@ export default function RiderAnalyticsClient({ accessToken }: { accessToken: str
     : "N/A"
 
   const avgRevenuePerDelivery = deliveries.length > 0
-    ? (deliveries.reduce((s, d) => s + Number(d.orders?.total_amount ?? 0), 0) / deliveries.length).toFixed(0)
+    ? (deliveries.reduce((s, d) => s + Number(d.orders?.commissions?.[0]?.commission_amount ?? 0), 0) / deliveries.length).toFixed(0)
     : "N/A"
 
   if (loading) {

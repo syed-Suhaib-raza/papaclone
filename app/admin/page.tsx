@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import {
-  Home, Users as UsersIcon, UtensilsCrossed, BarChart3, 
-  Settings, Search, Menu, X, TrendingUp, TrendingDown, 
-  RefreshCw, AlertTriangle, Download
+  Home, Users as UsersIcon, UtensilsCrossed, BarChart3,
+  Settings, Search, Menu, X, TrendingUp, TrendingDown,
+  RefreshCw, AlertTriangle, Download, DollarSign
 } from "lucide-react"
 
 // UI Components
@@ -37,7 +37,8 @@ import UsersPage from "./usermanage/page"
 import Restaurants from "./resmanage/page"
 import Analytics from "./analytics/page"
 import SettingsPage from "./settings/page"
-import AlertsPage from "./alerts/page" 
+import AlertsPage from "./alerts/page"
+import CommissionsPage from "./commissions/page"
 
 // --- DASHBOARD CONTENT SUB-COMPONENT ---
 function DashboardContent({ setPage }: { setPage: (page: string) => void }) {
@@ -206,6 +207,7 @@ export default function AdminPage() {
     dashboard: <DashboardContent setPage={setActivePage}/>,
     users: <UsersPage/>,
     restaurants: <Restaurants/>,
+    commissions: <CommissionsPage/>,
     alerts: <AlertsPage/>,
     analytics: <Analytics/>,
     settings: <SettingsPage/>,
@@ -215,6 +217,7 @@ export default function AdminPage() {
     { page:"dashboard", label:"Dashboard", icon:<Home size={16}/> },
     { page:"users", label:"Users", icon:<UsersIcon size={16}/> },
     { page:"restaurants", label:"Restaurants", icon:<UtensilsCrossed size={16}/> },
+    { page:"commissions", label:"Commissions", icon:<DollarSign size={16}/> },
     { page:"alerts", label:"System Alerts", icon:<AlertTriangle size={16}/>, badge: "!" },
     { page:"analytics", label:"Analytics", icon:<BarChart3 size={16}/> },
     { page:"settings", label:"Settings", icon:<Settings size={16}/> },

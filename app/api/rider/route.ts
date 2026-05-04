@@ -49,31 +49,37 @@ export async function GET(req: Request) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const [{ data: riderData }, { data: deliveries, error }] = await Promise.all([
+    const [{ data: riderData }, { data: deliveries, error }, { data: allCommissions }] = await Promise.all([
       supabase.from("riders").select("status").eq("id", user.id).single(),
-      supabase.from("deliveries").select("id, status, pickup_time, delivery_time, orders(total_amount, status)").eq("rider_id", user.id),
+      supabase.from("deliveries").select("id, status, pickup_time, delivery_time, orders(id, total_amount, status)").eq("rider_id", user.id),
+      supabase.from("commissions").select("order_id, commission_amount, created_at").gte("created_at", today.toISOString()),
     ])
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     const all = deliveries ?? []
 
+    // Build a set of this rider's order IDs so we can cross-reference commissions
+    const riderOrderIds = new Set(
+      all.map((d) => (d as any).orders?.id).filter(Boolean)
+    )
+
     const active = all.filter((d) =>
       !["delivered", "cancelled"].includes((d as any).orders?.status ?? "") &&
       d.status !== "delivered"
     ).length
 
-    const completedToday = all.filter((d) => {
-      if (d.status !== "delivered" || !d.delivery_time) return false
-      return new Date(d.delivery_time) >= today
-    }).length
+    const isToday = (d: (typeof all)[number]) => {
+      const ts = d.delivery_time ?? d.pickup_time
+      return ts ? new Date(ts) >= today : false
+    }
 
-    const todaysEarnings = all
-      .filter((d) => {
-        if (d.status !== "delivered" || !d.delivery_time) return false
-        return new Date(d.delivery_time) >= today
-      })
-      .reduce((sum, d) => sum + Number((d as any).orders?.total_amount ?? 0), 0)
+    const completedToday = all.filter((d) => d.status === "delivered" && isToday(d)).length
+
+    // Filter commissions to today + this rider's orders (same pattern as analytics)
+    const todaysEarnings = (allCommissions ?? [])
+      .filter((c) => riderOrderIds.has(c.order_id))
+      .reduce((sum, c) => sum + Number(c.commission_amount ?? 0), 0)
 
     const completedWithTimes = all.filter(
       (d) => d.status === "delivered" && d.pickup_time && d.delivery_time

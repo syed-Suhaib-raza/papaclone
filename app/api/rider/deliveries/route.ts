@@ -93,14 +93,15 @@ export async function PATCH(req: Request) {
       .update(updates)
       .eq("id", deliveryId)
       .eq("rider_id", riderId)
-      .select("id, status, orders(id)")
+      .select("id, status, orders(id, total_amount, restaurant_id)")
       .single()
 
     if (deliveryError) return NextResponse.json({ error: deliveryError.message }, { status: 500 })
     if (!delivery) return NextResponse.json({ error: "Delivery not found" }, { status: 404 })
 
     // Sync order status
-    const orderId = (delivery.orders as any)?.id
+    const order = delivery.orders as any
+    const orderId = order?.id
     if (orderId) {
       const orderStatusMap: Record<string, string> = {
         picked_up: "picked_up",
@@ -112,6 +113,31 @@ export async function PATCH(req: Request) {
         const orderUpdate: Record<string, unknown> = { status: orderStatus }
         if (status === "cancelled") orderUpdate.rider_id = null
         await supabase.from("orders").update(orderUpdate).eq("id", orderId)
+      }
+    }
+
+    // Record rider commission on delivery completion
+    if (status === "delivered" && orderId && order?.restaurant_id && order?.total_amount) {
+      const { data: restaurant } = await supabase
+        .from("restaurants")
+        .select("commission_percentage")
+        .eq("id", order.restaurant_id)
+        .single()
+
+      const pct = Number(restaurant?.commission_percentage ?? 0)
+      if (pct > 0) {
+        const commissionAmount = Number(order.total_amount) * pct
+        const { data: existing } = await supabase
+          .from("commissions")
+          .select("id")
+          .eq("order_id", orderId)
+          .maybeSingle()
+
+        if (!existing) {
+          await supabase
+            .from("commissions")
+            .insert({ order_id: orderId, commission_amount: commissionAmount })
+        }
       }
     }
 

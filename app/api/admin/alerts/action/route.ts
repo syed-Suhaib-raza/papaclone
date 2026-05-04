@@ -40,15 +40,45 @@ export async function POST(req: NextRequest) {
         // Mark delivery done
         await supabase
           .from('deliveries')
-          .update({ status: 'delivered' })
+          .update({ status: 'delivered', delivery_time: new Date().toISOString() })
           .eq('id', id)
 
-        // Mark order done
+        // Mark order done and record commission
         if (delivery?.order_id) {
           await supabase
             .from('orders')
             .update({ status: 'delivered' })
             .eq('id', delivery.order_id)
+
+          const { data: order } = await supabase
+            .from('orders')
+            .select('total_amount, restaurant_id')
+            .eq('id', delivery.order_id)
+            .single()
+
+          if (order?.total_amount && order?.restaurant_id) {
+            const { data: restaurant } = await supabase
+              .from('restaurants')
+              .select('commission_percentage')
+              .eq('id', order.restaurant_id)
+              .single()
+
+            const pct = Number(restaurant?.commission_percentage ?? 0)
+            if (pct > 0) {
+              const commissionAmount = Number(order.total_amount) * pct
+              const { data: existing } = await supabase
+                .from('commissions')
+                .select('id')
+                .eq('order_id', delivery.order_id)
+                .maybeSingle()
+
+              if (!existing) {
+                await supabase
+                  .from('commissions')
+                  .insert({ order_id: delivery.order_id, commission_amount: commissionAmount })
+              }
+            }
+          }
         }
       }
 
