@@ -39,7 +39,8 @@ async function fetchRestaurantWithMenu(supabase: any, restaurantId: string): Pro
     .from("restaurants")
     .select("id, name, description, image_url, rating")
     .eq("id", restaurantId)
-    .single()
+    .in("status", ["active", "pending"])
+    .maybeSingle()
 
   if (!rest) return null
 

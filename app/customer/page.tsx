@@ -29,6 +29,7 @@ export default function Dashboard() {
       const { data, error } = await supabase
         .from("restaurants")
         .select("id, name, description, image_url, rating")
+        .in("status", ["active", "pending"])
 
       if (error) {
         console.error("Error fetching restaurants:", error)

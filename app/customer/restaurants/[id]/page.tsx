@@ -110,7 +110,8 @@ export default function RestaurantMenuPage() {
           .from("restaurants")
           .select("id, name, description, image_url, rating, latitude, longitude")
           .eq("id", id)
-          .single(),
+          .in("status", ["active", "pending"])
+          .maybeSingle(),
         supabase
           .from("menu_items")
           .select("id, name, description, price, image_url, available, category_id, categories(name)")
@@ -120,6 +121,11 @@ export default function RestaurantMenuPage() {
 
       if (restErr) console.error("Restaurant fetch error:", restErr)
       if (itemsErr) console.error("Menu items fetch error:", itemsErr)
+
+      if (!rest) {
+        router.replace("/customer")
+        return
+      }
 
       setRestaurant(rest ?? null)
       setMenuItems((items as MenuItem[]) ?? [])
