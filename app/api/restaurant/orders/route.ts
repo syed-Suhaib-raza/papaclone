@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { emitToRider } from "@/lib/socketServer"
 
 function makeClient(token: string) {
   return createClient(
@@ -70,7 +71,9 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid order ID or status" }, { status: 400 })
     }
 
-    const { data, error } = await makeClient(token)
+    const supabase = makeClient(token)
+
+    const { data, error } = await supabase
       .from("orders")
       .update({ status })
       .eq("id", orderId)
@@ -80,8 +83,67 @@ export async function PATCH(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     if (!data) return NextResponse.json({ error: "Order not found" }, { status: 404 })
+
+    if (status === "ready") {
+      assignRider(supabase, orderId).catch((e) => console.error("[assignRider] unhandled:", e))
+    }
+
     return NextResponse.json(data)
   } catch (e: unknown) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Server error" }, { status: 500 })
+  }
+}
+
+async function assignRider(supabase: ReturnType<typeof makeClient>, orderId: string) {
+  try {
+    const { data: busyRiders } = await supabase
+      .from("deliveries")
+      .select("rider_id")
+      .not("status", "in", '("completed","cancelled","delivered","declined")')
+
+    const busyIds = (busyRiders ?? []).map((r: any) => r.rider_id).filter(Boolean)
+
+    let ridersQuery = supabase
+      .from("riders")
+      .select("id")
+      .eq("status", "active")
+      .limit(1)
+
+    if (busyIds.length > 0) {
+      ridersQuery = ridersQuery.not("id", "in", `(${busyIds.map((id: string) => `"${id}"`).join(",")})`)
+    }
+
+    const { data: availableRiders } = await ridersQuery
+    if (!availableRiders || availableRiders.length === 0) return
+
+    const riderId = availableRiders[0].id
+
+    const { data: delivery } = await supabase
+      .from("deliveries")
+      .insert({ order_id: orderId, rider_id: riderId, status: "assigned" })
+      .select("id")
+      .single()
+
+    await supabase.from("orders").update({ rider_id: riderId }).eq("id", orderId)
+
+    if (!delivery) return
+
+    const { data: full } = await supabase
+      .from("deliveries")
+      .select(`
+        id, status,
+        orders (
+          id, total_amount, status,
+          restaurants ( id, name, latitude, longitude ),
+          addresses ( street, city, latitude, longitude ),
+          users ( name, phone )
+        )
+      `)
+      .eq("id", delivery.id)
+      .single()
+
+    if (full) emitToRider(riderId, "new-delivery", full)
+  } catch (e) {
+    console.error("[assignRider]", e)
   }
 }

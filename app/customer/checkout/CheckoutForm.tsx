@@ -6,7 +6,7 @@ import { useTheme } from "next-themes"
 import { loadStripe } from "@stripe/stripe-js"
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import { useCart } from "@/lib/cartContext"
-import { ArrowLeft, MapPin } from "lucide-react"
+import { ArrowLeft, MapPin, Loader2 } from "lucide-react"
 import Sidebar from "@/components/Cusdashboard/Sidebar"
 import Navbar from "@/components/Cusdashboard/Navbar"
 
@@ -16,14 +16,12 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 function PaymentForm({
   accessToken,
   userId,
-  street,
-  city,
+  addressId,
   onSuccess,
 }: {
   accessToken: string
   userId: string
-  street: string
-  city: string
+  addressId: string
   onSuccess: () => void
 }) {
   const stripe = useStripe()
@@ -43,7 +41,7 @@ function PaymentForm({
     // Store pending order data so the success page can create the DB record
     localStorage.setItem(
       "smartfood_pending_order",
-      JSON.stringify({ cart, street, city, userId })
+      JSON.stringify({ cart, addressId, userId })
     )
 
     const { error } = await stripe.confirmPayment({
@@ -96,10 +94,11 @@ export default function CheckoutForm({ accessToken, userId }: { accessToken: str
   const isDark = resolvedTheme === "dark"
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [street, setStreet] = useState("")
-  const [city, setCity] = useState("")
-  const [addressReady, setAddressReady] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
+
+  const [addressId, setAddressId] = useState<string | null>(null)
+  const [addressLabel, setAddressLabel] = useState<string | null>(null)
+  const [addressLoading, setAddressLoading] = useState(true)
 
   const subtotal = cart?.items.reduce((s, i) => s + i.price * i.quantity, 0) ?? 0
 
@@ -109,6 +108,7 @@ export default function CheckoutForm({ accessToken, userId }: { accessToken: str
       return
     }
 
+    // Load payment intent
     fetch("/api/customer/checkout", {
       method: "POST",
       headers: {
@@ -123,6 +123,20 @@ export default function CheckoutForm({ accessToken, userId }: { accessToken: str
         setClientSecret(d.clientSecret)
       })
       .catch((e) => setFetchError(e.message))
+
+    // Load profile address
+    fetch("/api/customer/profile", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.address?.id) {
+          setAddressId(d.address.id)
+          setAddressLabel(`${d.address.street}, ${d.address.city}`)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setAddressLoading(false))
   }, [])
 
   if (!cart || cart.items.length === 0) return null
@@ -169,44 +183,38 @@ export default function CheckoutForm({ accessToken, userId }: { accessToken: str
                 </div>
               </div>
 
-              {/* Delivery address */}
+              {/* Delivery address (read-only) */}
               <div className="bg-card border border-border rounded-xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <MapPin size={15} className="text-primary" />
-                  Delivery Address
-                </div>
-
-                <div className="space-y-2">
-                  <input
-                    value={street}
-                    onChange={(e) => setStreet(e.target.value)}
-                    placeholder="Street address"
-                    className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <input
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="City"
-                    className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-
-                {!addressReady && (
-                  <button
-                    onClick={() => {
-                      if (street.trim() && city.trim()) setAddressReady(true)
-                    }}
-                    disabled={!street.trim() || !city.trim()}
-                    className="w-full bg-muted text-foreground py-2 rounded-lg text-sm font-medium hover:bg-muted/80 transition disabled:opacity-50"
-                  >
-                    Confirm Address
-                  </button>
-                )}
-                {addressReady && (
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-green-600 dark:text-green-400 font-medium">✓ Address confirmed</p>
-                    <button onClick={() => setAddressReady(false)} className="text-xs text-muted-foreground hover:underline">Edit</button>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <MapPin size={15} className="text-primary" />
+                    Delivery Address
                   </div>
+                  <button
+                    onClick={() => router.push("/customer/profile")}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Change
+                  </button>
+                </div>
+
+                {addressLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 size={14} className="animate-spin" />
+                    Loading address…
+                  </div>
+                ) : addressLabel ? (
+                  <p className="text-sm text-foreground">{addressLabel}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No address saved.{" "}
+                    <button
+                      onClick={() => router.push("/customer/profile")}
+                      className="text-primary hover:underline"
+                    >
+                      Add one in your profile
+                    </button>
+                  </p>
                 )}
               </div>
             </div>
@@ -219,13 +227,17 @@ export default function CheckoutForm({ accessToken, userId }: { accessToken: str
                 </div>
               )}
 
-              {!addressReady && !fetchError && (
+              {!addressId && !addressLoading && !fetchError && (
                 <div className="bg-card border border-border rounded-xl p-5 text-sm text-muted-foreground">
-                  Please confirm your delivery address to proceed with payment.
+                  Please add a delivery address in your{" "}
+                  <button onClick={() => router.push("/customer/profile")} className="text-primary hover:underline">
+                    profile
+                  </button>{" "}
+                  to proceed with payment.
                 </div>
               )}
 
-              {addressReady && clientSecret && (
+              {addressId && clientSecret && (
                 <Elements
                   key={isDark ? "dark" : "light"}
                   stripe={stripePromise}
@@ -246,14 +258,13 @@ export default function CheckoutForm({ accessToken, userId }: { accessToken: str
                   <PaymentForm
                     accessToken={accessToken}
                     userId={userId}
-                    street={street}
-                    city={city}
+                    addressId={addressId}
                     onSuccess={() => {}}
                   />
                 </Elements>
               )}
 
-              {addressReady && !clientSecret && !fetchError && (
+              {addressId && !clientSecret && !fetchError && (
                 <div className="bg-card border border-border rounded-xl p-5 space-y-3">
                   <div className="h-10 bg-muted rounded animate-pulse" />
                   <div className="h-10 bg-muted rounded animate-pulse" />

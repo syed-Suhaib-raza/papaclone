@@ -32,13 +32,16 @@ export async function GET(req: Request) {
         total_amount,
         created_at,
         restaurant_id,
-        restaurants ( name ),
+        rider_id,
+        restaurants ( name, latitude, longitude ),
+        addresses ( street, city, latitude, longitude ),
         order_items (
           item_id,
           quantity,
           price_at_order,
           menu_items ( name, image_url )
-        )
+        ),
+        deliveries ( accepted_at, status )
       `)
       .eq("customer_id", data.user.id)
       .order("created_at", { ascending: false });

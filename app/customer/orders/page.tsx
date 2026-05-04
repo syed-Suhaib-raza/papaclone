@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Cusdashboard/Navbar";
 import Sidebar from "@/components/Cusdashboard/Sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supaBaseClient";
 import { useCart } from "@/lib/cartContext";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, MapPin } from "lucide-react";
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { cart, addToCart, setCartOpen } = useCart();
@@ -182,13 +184,23 @@ export default function OrdersPage() {
                 ))}
               </div>
 
-              {/* TOTAL + REORDER */}
+              {/* TOTAL + ACTIONS */}
               <div className="flex justify-between items-center pt-2 border-t border-border">
                 <span className="text-muted-foreground text-sm">Total Amount</span>
                 <div className="flex items-center gap-3">
                   <span className="text-green-500 font-semibold">
                     PKR {order.total_amount?.toLocaleString()}
                   </span>
+                  {order.rider_id && ["ready", "picked_up"].includes(order.status) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => router.push(`/customer/tracking?orderId=${order.id}`)}
+                    >
+                      <MapPin size={13} className="mr-1" />
+                      Track
+                    </Button>
+                  )}
                   {showReorder && (
                     <Button size="sm" variant="outline" onClick={() => handleReorder(order)}>
                       <RefreshCw size={13} className="mr-1" />

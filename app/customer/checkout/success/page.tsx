@@ -8,8 +8,7 @@ import { Cart } from "@/lib/cartContext"
 
 type PendingOrder = {
   cart: Cart
-  street: string
-  city: string
+  addressId: string
   userId: string
 }
 
@@ -43,18 +42,9 @@ export default function CheckoutSuccessPage() {
 
   async function createOrder(pending: PendingOrder) {
     try {
-      const { cart, street, city, userId } = pending
+      const { cart, addressId, userId } = pending
 
-      // 1. Save delivery address
-      const { data: address, error: addrErr } = await supabase
-        .from("addresses")
-        .insert({ user_id: userId, street, city })
-        .select("id")
-        .single()
-
-      if (addrErr || !address) throw new Error("Failed to save address")
-
-      // 2. Create order
+      // 1. Create order using existing address from profile
       const total = cart.items.reduce((s, i) => s + i.price * i.quantity, 0)
 
       const { data: order, error: orderErr } = await supabase
@@ -62,7 +52,7 @@ export default function CheckoutSuccessPage() {
         .insert({
           customer_id: userId,
           restaurant_id: cart.restaurantId,
-          delivery_address_id: address.id,
+          delivery_address_id: addressId,
           total_amount: total,
           status: "pending",
         })
@@ -71,7 +61,7 @@ export default function CheckoutSuccessPage() {
 
       if (orderErr || !order) throw new Error("Failed to create order")
 
-      // 3. Create order items
+      // 2. Create order items
       const orderItems = cart.items.map((item) => ({
         order_id: order.id,
         item_id: item.id,
@@ -82,9 +72,8 @@ export default function CheckoutSuccessPage() {
       const { error: itemsErr } = await supabase.from("order_items").insert(orderItems)
       if (itemsErr) throw new Error("Failed to save order items")
 
-      // 4. Clean up
+      // 3. Clean up
       localStorage.removeItem("smartfood_pending_order")
-      localStorage.removeItem("smartfood_cart")
 
       setOrderId(order.id)
       setStatus("success")
