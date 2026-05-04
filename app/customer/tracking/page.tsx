@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { ArrowLeft, Clock } from "lucide-react"
+import { ArrowLeft, Phone } from "lucide-react"
 import { io, Socket } from "socket.io-client"
 import { supabase } from "@/lib/supaBaseClient"
 import Sidebar from "@/components/Cusdashboard/Sidebar"
@@ -29,19 +29,6 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_STEPS = ["pending", "confirmed", "preparing", "ready", "picked_up", "delivered"]
 
-function useTimer(startMs: number | null) {
-  const [elapsed, setElapsed] = useState(0)
-  useEffect(() => {
-    if (!startMs) return
-    const tick = () => setElapsed(Math.floor((Date.now() - startMs) / 1000))
-    tick()
-    const id = setInterval(tick, 1000)
-    return () => clearInterval(id)
-  }, [startMs])
-  const mins = Math.floor(elapsed / 60)
-  const secs = elapsed % 60
-  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-}
 
 async function geocodeAddress(street: string, city: string): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -64,7 +51,7 @@ export default function TrackingPage() {
   const orderId = searchParams.get("orderId")
 
   const [order, setOrder] = useState<OrderTracking | null>(null)
-  const [timerStart, setTimerStart] = useState<number | null>(null)
+  const [riderContact, setRiderContact] = useState<{ name: string; phone: string | null } | null>(null)
   const [loading, setLoading] = useState(true)
   const [riderLat, setRiderLat] = useState<number | null>(null)
   const [riderLng, setRiderLng] = useState<number | null>(null)
@@ -73,8 +60,6 @@ export default function TrackingPage() {
   const mapInstance = useRef<any>(null)
   const riderMarkerRef = useRef<any>(null)
   const socketRef = useRef<Socket | null>(null)
-
-  const timer = useTimer(timerStart)
 
   // Fetch order details
   useEffect(() => {
@@ -90,17 +75,18 @@ export default function TrackingPage() {
       if (!res.ok) return
 
       const orders = await res.json()
-      const found = orders.find((o: any) => o.id === orderId)
-      if (found) {
-        setOrder(found)
-        // Use the accepted_at from the active delivery (not cancelled/declined) as timer start
-        const activeDelivery = (found.deliveries ?? [])
-          .find((d: any) => d.status !== "cancelled" && d.status !== "declined")
-        if (activeDelivery?.accepted_at) {
-          setTimerStart(new Date(activeDelivery.accepted_at).getTime())
-        }
-      }
+      const found = orders.find((o: any) => o.id === orderId) ?? null
+      setOrder(found)
       setLoading(false)
+
+      if (found?.rider_id) {
+        const { data: riderData } = await supabase
+          .from("riders")
+          .select("name, phone")
+          .eq("id", found.rider_id)
+          .single()
+        if (riderData) setRiderContact(riderData)
+      }
     }
 
     load()
@@ -245,6 +231,7 @@ export default function TrackingPage() {
     }
 
     buildMap()
+
   }, [order])
 
   if (!orderId) {
@@ -280,10 +267,17 @@ export default function TrackingPage() {
               <h1 className="text-lg font-bold">Track Order</h1>
               <p className="text-xs text-muted-foreground">Order #{orderId?.slice(0, 8)}</p>
             </div>
-            <div className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-full">
-              <Clock size={14} className="text-muted-foreground" />
-              <span className="text-sm font-mono font-bold">{timer}</span>
-            </div>
+            {riderContact && (
+              <div className="flex items-center gap-2 bg-muted px-3 py-1.5 rounded-full">
+                <Phone size={14} className="text-muted-foreground shrink-0" />
+                <div className="text-sm leading-tight">
+                  <span className="font-medium">{riderContact.name}</span>
+                  {riderContact.phone && (
+                    <span className="text-muted-foreground ml-1.5">{riderContact.phone}</span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {loading ? (
