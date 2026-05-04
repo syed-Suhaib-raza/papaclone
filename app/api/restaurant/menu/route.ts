@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { cacheDel } from "@/lib/redis"
 
 function makeClient(token?: string) {
   return createClient(
@@ -72,6 +73,7 @@ export async function POST(req: Request) {
       .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    await cacheDel(`restaurant:${restaurantId}:menu`)
     return NextResponse.json(data, { status: 201 })
   } catch (e: unknown) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Server error" }, { status: 500 })

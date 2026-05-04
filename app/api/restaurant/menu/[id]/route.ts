@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { cacheDel } from "@/lib/redis"
 
 function makeClient(token?: string) {
   return createClient(
@@ -57,6 +58,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     if (!data) return NextResponse.json({ error: "Item not found" }, { status: 404 })
+    await cacheDel(`restaurant:${restaurantId}:menu`)
     return NextResponse.json(data)
   } catch (e: unknown) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Server error" }, { status: 500 })
@@ -78,6 +80,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     if (count === 0) return NextResponse.json({ error: "Item not found" }, { status: 404 })
+    await cacheDel(`restaurant:${restaurantId}:menu`)
     return NextResponse.json({ success: true })
   } catch (e: unknown) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Server error" }, { status: 500 })

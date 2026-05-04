@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Sidebar from "@/components/Cusdashboard/Sidebar"
 import Navbar from "@/components/Cusdashboard/Navbar"
 import RestaurantCard from "@/components/Cusdashboard/Restaurantcard"
+import FrequentRestaurants from "@/components/Cusdashboard/FrequentRestaurants"
 import { supabase } from "@/lib/supaBaseClient"
 
 type RatingFilter = "all" | "3+" | "4+"
@@ -66,6 +67,8 @@ export default function Dashboard() {
       <div className="flex-1 ml-64">
 
         <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+
+        <FrequentRestaurants />
 
         {/* Filter chips */}
         <div className="px-6 pt-4 flex items-center gap-2">
